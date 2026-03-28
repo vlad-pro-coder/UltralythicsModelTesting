@@ -1,0 +1,1 @@
+CBAM implementation, removes noise which is considered to be the small trash objects

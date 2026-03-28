@@ -1,0 +1,1 @@
+Added a second C2F better accurary a little more memori 10% less processing Gflops, stable as the yolov8m when it comes to the object getting disturbed

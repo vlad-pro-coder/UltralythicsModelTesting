@@ -1,0 +1,6 @@
+env/
+merged_dataset/
+*.pt
+*.onnx
+runs/segment/AllPredictions
+testedData

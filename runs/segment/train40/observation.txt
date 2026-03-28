@@ -1,0 +1,1 @@
+default yolov8m for reference

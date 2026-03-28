@@ -1,0 +1,1 @@
+integrating the 4th head into the PAN arhitecture which in turn generates almost same performance as yolov8m 2.2x less params and 40% less computational complexity, problem is that integrating it makes it very sensible to distorsion by natural causes
