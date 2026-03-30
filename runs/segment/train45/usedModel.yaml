@@ -1,0 +1,69 @@
+# Ultralytics YOLOv8s-seg custom with P2 head
+nc: 80
+depth_multiple: 0.33
+width_multiple: 0.5
+
+backbone:
+  # [from, repeats, module, args]
+  - [-1, 1, Conv, [64, 3, 2]] # 0-P1/2
+  - [-1, 1, Conv, [128, 3, 2]] # 1-P2/4
+  - [-1, 3, C2f, [128, True]]
+  - [-1, 1, Conv, [256, 3, 2]] # 3-P3/8
+  - [-1, 6, C2f, [256, True]]
+  - [-1, 1, Conv, [512, 3, 2]] # 5-P4/16
+  - [-1, 6, C2f, [512, True]]
+  - [-1, 1, Conv, [1024, 3, 2]] # 7-P5/32
+  - [-1, 3, C2f, [1024, True]]
+  - [-1, 1, SPPF, [1024, 5]] # 9
+
+head:
+  # Standard FPN
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]
+  - [[-1, 6], 1, Concat, [1]]
+  - [-1, 3, C2f, [512]] # 12
+
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]
+  - [[-1, 4], 1, Concat, [1]]
+  - [-1, 3, C2f, [256]] # 15 (P3)
+
+  # -----------------------------
+  # 🔹 P2 HEAD (improved)
+  # -----------------------------
+
+  # P3 → P2
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]   # 16
+  - [[-1, 1], 1, Concat, [1]]                    # 17
+  - [-1, 3, C2f, [128]]                          # 18 (base P2)
+
+  # 🔥 Context injection (VERY LIGHT)
+  - [15, 1, Conv, [64, 1, 1]]                    # 19 (compress P3)
+  - [-1, 1, nn.Upsample, [None, 2, "nearest"]]   # 20 (align to P2)
+  - [[18, -1], 1, Concat, [1]]                   # 21 (P2 + context)
+
+  # refine with minimal cost
+  - [-1, 3, C2f, [128]]                          # 22 (final P2)
+
+  # -----------------------------
+  # 🔹 Continue pyramid (UPDATED)
+  # -----------------------------
+
+  # P2 → P3 (backflow)
+  - [-1, 1, Conv, [256, 3, 2]]                   # 23
+  - [[-1, 15], 1, Concat, [1]]                   # 24
+  - [-1, 3, C2f, [256]]                          # 25 (refined P3)
+
+  # P4
+  - [25, 1, Conv, [256, 3, 2]]
+  - [[-1, 12], 1, Concat, [1]]
+  - [-1, 3, C2f, [512]]                          # 28
+
+  # P5
+  - [-1, 1, Conv, [512, 3, 2]]
+  - [[-1, 9], 1, Concat, [1]]
+  - [-1, 3, C2f, [1024]]                         # 31
+
+  # Segment head
+  - [[25, 22, 28, 31], 1, Segment, [nc, 32, 256]]
+
+# number of feature maps fed to segment head
+ch: 4

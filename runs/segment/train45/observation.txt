@@ -1,0 +1,1 @@
+reinforced p2 head with an upsampled p3 head to reduce model sensibility.
