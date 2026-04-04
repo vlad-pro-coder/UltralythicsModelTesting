@@ -1,0 +1,1 @@
+used FakeMix on everything glass detection got better but overall got worse final Map 0.699 better because of more training data
