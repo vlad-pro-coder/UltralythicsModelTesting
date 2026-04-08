@@ -1,0 +1,1 @@
+better yolov8s model because of more training time
